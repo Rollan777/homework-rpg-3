@@ -1,6 +1,5 @@
 package com.narxoz.rpg.battle;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
 
@@ -25,7 +24,6 @@ public final class BattleEngine {
     }
 
     public void reset() {
-        // пока состояния нет — оставим метод на будущее
     }
 
     public EncounterResult runEncounter(List<Combatant> teamA, List<Combatant> teamB) {
@@ -35,30 +33,43 @@ public final class BattleEngine {
         if (teamA.isEmpty() || teamB.isEmpty()) {
             throw new IllegalArgumentException("Teams must not be empty");
         }
+        teamA.removeIf(c -> c == null);
+        teamB.removeIf(c -> c == null);
+
+        if (teamA.isEmpty() || teamB.isEmpty()) {
+            throw new IllegalArgumentException("Teams must contain at least 1 combatant");
+        }
 
         EncounterResult result = new EncounterResult();
         result.addLog("Battle started!");
         result.addLog("Team A size: " + teamA.size() + ", Team B size: " + teamB.size());
 
         int rounds = 0;
-        int maxRounds = 100; // защита от бесконечного боя
+        int maxRounds = 100;
 
-        while (hasAlive(teamA) && hasAlive(teamB) && rounds < maxRounds) {
+        while (!teamA.isEmpty() && !teamB.isEmpty() && rounds < maxRounds) {
             rounds++;
             result.addLog("\n--- Round " + rounds + " ---");
 
             doTeamTurn("A", teamA, "B", teamB, result);
-            if (!hasAlive(teamB)) break;
+            teamA.removeIf(c -> !c.isAlive());
+            teamB.removeIf(c -> !c.isAlive());
+
+            if (teamB.isEmpty()) {
+                break;
+            }
 
             doTeamTurn("B", teamB, "A", teamA, result);
+            teamA.removeIf(c -> !c.isAlive());
+            teamB.removeIf(c -> !c.isAlive());
         }
 
         result.setRounds(rounds);
 
-        if (hasAlive(teamA) && !hasAlive(teamB)) {
+        if (!teamA.isEmpty() && teamB.isEmpty()) {
             result.setWinner("Team A");
             result.addLog("\nBattle finished: Team A wins!");
-        } else if (hasAlive(teamB) && !hasAlive(teamA)) {
+        } else if (!teamB.isEmpty() && teamA.isEmpty()) {
             result.setWinner("Team B");
             result.addLog("\nBattle finished: Team B wins!");
         } else {
@@ -75,13 +86,17 @@ public final class BattleEngine {
                             List<Combatant> defenders,
                             EncounterResult result) {
 
-        for (Combatant attacker : attackers) {
-            if (!attacker.isAlive()) continue;
+        for (int i = 0; i < attackers.size(); i++) {
+            Combatant attacker = attackers.get(i);
+            if (attacker == null || !attacker.isAlive()) {
+                continue;
+            }
 
-            Combatant target = pickRandomAlive(defenders);
-            if (target == null) {
+            if (defenders.isEmpty()) {
                 return;
             }
+
+            Combatant target = pickRandomTarget(defenders);
 
             int dmg = attacker.getAttackPower();
             if (dmg < 0) dmg = 0;
@@ -98,19 +113,18 @@ public final class BattleEngine {
         }
     }
 
-    private boolean hasAlive(List<Combatant> team) {
-        for (Combatant c : team) {
-            if (c != null && c.isAlive()) return true;
-        }
-        return false;
-    }
+    private Combatant pickRandomTarget(List<Combatant> defenders) {
+        int idx = random.nextInt(defenders.size());
+        Combatant target = defenders.get(idx);
 
-    private Combatant pickRandomAlive(List<Combatant> team) {
-        List<Combatant> alive = new ArrayList<>();
-        for (Combatant c : team) {
-            if (c != null && c.isAlive()) alive.add(c);
+        if (target != null && target.isAlive()) {
+            return target;
         }
-        if (alive.isEmpty()) return null;
-        return alive.get(random.nextInt(alive.size()));
+
+        for (Combatant c : defenders) {
+            if (c != null && c.isAlive()) return c;
+        }
+
+        return defenders.get(0);
     }
 }
