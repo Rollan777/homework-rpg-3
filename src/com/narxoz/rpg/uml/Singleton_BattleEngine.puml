@@ -1,0 +1,18 @@
+@startuml
+class BattleEngine {
+  - static BattleEngine instance
+  - Random random
+  - BattleEngine()
+  + static BattleEngine getInstance() : BattleEngine
+  + setRandomSeed(seed: long) : BattleEngine
+  + runEncounter(teamA: List<Combatant>, teamB: List<Combatant>) : EncounterResult
+  + reset() : void
+}
+
+note right of BattleEngine
+Singleton:
+- private constructor
+- static instance
+- getInstance()
+end note
+@enduml

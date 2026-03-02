@@ -16,12 +16,12 @@ public class Main {
     public static void main(String[] args) {
         System.out.println("=== RPG Battle Engine Demo ===\n");
 
-        // TODO: Create heroes and enemies
+        // Heroes / Enemies (как в прошлых дз, просто создаём)
         Warrior warrior = new Warrior("Arthas");
         Mage mage = new Mage("Jaina");
         Goblin goblin = new Goblin();
 
-        // TODO: Wrap with adapters
+        // Wrap into Combatant via adapters
         List<Combatant> heroes = new ArrayList<>();
         heroes.add(new HeroCombatantAdapter(warrior));
         heroes.add(new HeroCombatantAdapter(mage));
@@ -29,18 +29,31 @@ public class Main {
         List<Combatant> enemies = new ArrayList<>();
         enemies.add(new EnemyCombatantAdapter(goblin));
 
-        // TODO: Demonstrate Singleton behavior
+        System.out.println("Team A (Heroes):");
+        for (Combatant c : heroes) {
+            System.out.println("- " + c.getName() + " (ATK=" + c.getAttackPower() + ")");
+        }
+
+        System.out.println("\nTeam B (Enemies):");
+        for (Combatant c : enemies) {
+            System.out.println("- " + c.getName() + " (ATK=" + c.getAttackPower() + ")");
+        }
+
+        // Singleton check
         BattleEngine engineA = BattleEngine.getInstance();
         BattleEngine engineB = BattleEngine.getInstance();
-        System.out.println("Same instance? " + (engineA == engineB));
+        System.out.println("\nSingleton check: " + (engineA == engineB));
         System.out.println();
 
-        // TODO: Run battle and print summary
+        // Run battle
         engineA.setRandomSeed(42L);
         EncounterResult result = engineA.runEncounter(heroes, enemies);
 
+        System.out.println("\n=== Result ===");
         System.out.println("Winner: " + result.getWinner());
         System.out.println("Rounds: " + result.getRounds());
+
+        System.out.println("\n=== Battle Log ===");
         for (String line : result.getBattleLog()) {
             System.out.println(line);
         }

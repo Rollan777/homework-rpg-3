@@ -1,0 +1,52 @@
+@startuml
+interface Combatant {
+  + getName() : String
+  + getAttackPower() : int
+  + takeDamage(amount: int) : void
+  + isAlive() : boolean
+}
+
+interface Hero {
+  + getName() : String
+  + getPower() : int
+  + receiveDamage(amount: int) : void
+  + isAlive() : boolean
+}
+
+interface Enemy {
+  + getTitle() : String
+  + getDamage() : int
+  + applyDamage(amount: int) : void
+  + isDefeated() : boolean
+}
+
+class HeroCombatantAdapter {
+  - hero : Hero
+  + HeroCombatantAdapter(hero: Hero)
+}
+
+class EnemyCombatantAdapter {
+  - enemy : Enemy
+  + EnemyCombatantAdapter(enemy: Enemy)
+}
+
+Combatant <|.. HeroCombatantAdapter
+Combatant <|.. EnemyCombatantAdapter
+
+HeroCombatantAdapter --> Hero : wraps
+EnemyCombatantAdapter --> Enemy : wraps
+
+note bottom of HeroCombatantAdapter
+getName -> hero.getName
+getAttackPower -> hero.getPower
+takeDamage -> hero.receiveDamage
+isAlive -> hero.isAlive
+end note
+
+note bottom of EnemyCombatantAdapter
+getName -> enemy.getTitle
+getAttackPower -> enemy.getDamage
+takeDamage -> enemy.applyDamage
+isAlive -> !enemy.isDefeated
+end note
+@enduml
